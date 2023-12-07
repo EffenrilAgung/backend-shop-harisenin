@@ -3,7 +3,13 @@ const isEmpty = (value) => {
 };
 
 const userRegisterAreValid = (name, email, password) => {
-	return name && email && password && email.includes('@');
+	return (
+		!isEmpty(name) &&
+		!isEmpty(email) &&
+		!isEmpty(password) &&
+		password.length >= 6 &&
+		email.includes('@')
+	);
 };
 
 const userLoginAreValid = (email, password) => {

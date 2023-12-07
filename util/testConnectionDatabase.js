@@ -16,10 +16,9 @@ const testConnection = async () => {
 	} catch (error) {
 		console.error('Unable to connect to the database:', error);
 		return error;
+	} finally {
+		return await sequelize.close();
 	}
-	// finally {
-	// 	return await sequelize.close();
-	// }
 };
 
 module.exports = testConnection;

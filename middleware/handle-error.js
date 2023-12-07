@@ -22,11 +22,11 @@ const errorHandlerMiddleware = (err, req, res, next) => {
 		defaultError.msg = 'File size too large';
 	}
 	if (err.code === 'CastError') {
-		customError.msg = `No item found with that ID : ${err.value}`;
-		customError.statusCode = StatusCodes.NOT_FOUND;
+		defaultError.msg = `No item found with that ID : ${err.value}`;
+		defaultError.statusCode = StatusCodes.NOT_FOUND;
 	}
 
-	return res.status(customError.statusCode).json({ msg: customError.msg });
+	return res.status(defaultError.statusCode).json({ msg: defaultError.msg });
 };
 
 module.exports = errorHandlerMiddleware;
