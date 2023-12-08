@@ -12,7 +12,7 @@ module.exports.createUser = async (req, res, next) => {
 	try {
 		const { name, email, password } = req.body;
 
-		console.log(req.body, userRegisterAreValid(name, email, password));
+		const base64Image = req.file.buffer.toString('base64');
 
 		if (!userRegisterAreValid(name, email, password)) {
 			return res.status(StatusCodes.BAD_REQUEST).json({
@@ -34,7 +34,7 @@ module.exports.createUser = async (req, res, next) => {
 			email: email,
 			password: await hashPassword(password),
 			isAdmin: false,
-			avatar: 'https://www.gravatar.com/avatar',
+			avatar: req.file.buffer ? base64Image : 'https://www.gravatar.com/avatar',
 		});
 
 		return res.status(StatusCodes.CREATED).json({
@@ -84,6 +84,73 @@ module.exports.getAllUsers = async (req, res, next) => {
 			message: 'Get all users',
 			data: users,
 		});
+	} catch (error) {
+		next(error);
+	}
+};
+
+module.exports.updateUser = async (req, res, next) => {
+	try {
+		const { id } = req.params;
+		const { name, email, password } = req.body;
+
+		const base64Image = req.file.buffer.toString('base64');
+
+		if (!userRegisterAreValid(name, email, password)) {
+			return res.status(StatusCodes.BAD_REQUEST).json({
+				message: 'Invalid name, email or password',
+			});
+		}
+		const searchUser = await searchDuplicate(User, { id: id });
+
+		if (!searchUser) {
+			return res.status(StatusCodes.NOT_FOUND).json({
+				message: 'User not found',
+			});
+		} else {
+			const users = await User.update(
+				{
+					name: name,
+					password: await hashPassword(password),
+					email: email,
+					avatar: base64Image,
+				},
+				{
+					where: {
+						id: id,
+					},
+				}
+			);
+			return res.status(StatusCodes.OK).json({
+				message: 'User updated',
+				data: { ...users },
+			});
+		}
+	} catch (error) {
+		next(error);
+	}
+};
+
+module.exports.deleteUser = async (req, res, next) => {
+	try {
+		const { id } = req.params;
+
+		const users = User.destroy({
+			where: {
+				id: id,
+			},
+		});
+		if (!users) {
+			return res.status(StatusCodes.NOT_FOUND).json({
+				message: 'User not found',
+				userID: id,
+			});
+		} else {
+			return res.status(StatusCodes.OK).json({
+				message: 'User deleted',
+				id: { ...users },
+			});
+		}
 	} catch (error) {
 		next(error);
 	}
